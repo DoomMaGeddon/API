@@ -10,7 +10,7 @@ import layerRouter from "./routes/layerRouter";
 import rankRouter from "./routes/rankRouter";
 import requestRouter from "./routes/requestRouter";
 import userRouter from "./routes/userRouter";
-import { HOST, PORT } from "./config/env-variables";
+import { PORT } from "./config/env-variables";
 
 try {
     datasource.initialize().then(() => {
@@ -28,7 +28,7 @@ try {
         app.use("/user", userRouter);
 
         app.listen(PORT, () => {
-            console.log(`Server listening to ${HOST}:${PORT}`);
+            console.log(`Server listening to port ${PORT}`);
         });
     });
 } catch (error) {
