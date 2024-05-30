@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-export const HOST = process.env.HOST || "localhost";
+export const HOST = process.env.HOST || "0.0.0.0";
 export const PORT = process.env.PORT || 3000;
 export const DB_HOST = process.env.DB_HOST ?? "localhost";
 export const DB_PORT = Number(process.env.DB_PORT) ?? 5432;
