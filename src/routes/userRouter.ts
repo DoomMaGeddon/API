@@ -163,22 +163,25 @@ userRouter.post("/register", async (req, res) => {
 userRouter.post("/login", async (req, res) => {
     try {
         const { email, contrasenya } = req.body;
-        const user = await userRepository.findOne({ where: { email } });
+        const user = await userRepository.findOne({ where: { email: email } });
 
         if (!user) {
-            res.status(400).send("Datos incorrectos");
-        } else {
-            const validPass = await bcrypt.compare(contrasenya, user.contrasenya);
-            if (!validPass) {
-                res.status(400).send("Datos incorrectos");
-            }
-
-            const token = jwt.sign({ email: user.email }, TOKEN_SECRET as string, { expiresIn: JWT_EXPIRES });
-            tokenStore.addToken(token);
-            res.header("auth-token", token).status(200).send("Inicio de sesión exitoso");
+            return res.status(400).send("Datos incorrectos");
         }
+
+        const validPass = await bcrypt.compare(contrasenya, user.contrasenya);
+        if (!validPass) {
+            return res.status(400).send("Datos incorrectos");
+        }
+
+        user.contrasenya = "";
+
+        const token = jwt.sign({ email: user.email }, TOKEN_SECRET as string, { expiresIn: JWT_EXPIRES });
+        tokenStore.addToken(token);
+        return res.header("auth-token", token).status(200).json({ token: token, user: user });
+
     } catch (error) {
-        res.status(500).send("Error al iniciar sesión. " + error);
+        return res.status(500).send("Error al iniciar sesión. " + error);
     }
 });
 

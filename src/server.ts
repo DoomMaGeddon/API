@@ -30,6 +30,14 @@ try {
         app.listen(PORT, () => {
             console.log(`Server listening to port ${PORT}`);
         });
+
+        app.get("/", async (_req, res) => {
+            try {
+                res.status(200).send("TEST");
+            } catch (error) {
+                res.status(500).send(error);
+            }
+        });
     });
 } catch (error) {
     console.log(error);

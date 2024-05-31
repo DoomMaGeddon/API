@@ -7,14 +7,6 @@ import { z } from 'zod';
 const artifactRouter = express.Router();
 const artifactRepository = datasource.getRepository(Artefactos);
 
-artifactRouter.get("/test", async (_req, res) => {
-    try {
-        res.status(200).send("TEST");
-    } catch (error) {
-        res.status(500).send(error);
-    }
-});
-
 artifactRouter.get("/", async (_req, res) => {
     try {
         const artifacts = await artifactRepository.find();
