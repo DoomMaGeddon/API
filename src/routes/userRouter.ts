@@ -143,7 +143,7 @@ userRouter.post("/register", async (req, res) => {
             });
         }
 
-        const { email, contrasenya, ...data } = req.body;
+        const { email, contrasenya, ...data } = validatedData.data;
         const existingUser = await userRepository.findOne({ where: { email } });
 
         if (existingUser) {
@@ -153,7 +153,9 @@ userRouter.post("/register", async (req, res) => {
             const hashedPass = await bcrypt.hash(contrasenya, salt);
 
             await userRepository.save(userRepository.create({ email, contrasenya: hashedPass, ...data }));
-            return res.status(201).send("Usuario registrado correctamente");
+            return res.status(201).json({
+                email
+            });
         }
     } catch (error) {
         return res.status(500).send("Error al registrar el usuario. " + error);
@@ -178,7 +180,7 @@ userRouter.post("/login", async (req, res) => {
 
         const token = jwt.sign({ email: user.email }, TOKEN_SECRET as string, { expiresIn: JWT_EXPIRES });
         tokenStore.addToken(token);
-        return res.header("auth-token", token).status(200).json({ token: token, user: user });
+        return res.header("auth-token", token).status(200).json({ token, user });
 
     } catch (error) {
         return res.status(500).send("Error al iniciar sesión. " + error);

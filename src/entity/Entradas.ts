@@ -7,6 +7,9 @@ export class Entradas {
     id: number = 0;
 
     @Column({ type: "boolean", nullable: false })
+    foto: string = "";
+
+    @Column({ type: "boolean", nullable: false })
     original: boolean = false;
 
     @OneToMany(_type => Usuarios, usuario => usuario.email)
