@@ -7,7 +7,7 @@ export const userSchema = z.object({
     fotoPerfil: z.string().max(255).optional(),
     contrasenya: z.string().min(8).max(255),
     descripcion: z.string().max(255).optional(),
-    rol: z.enum(["Estándar", "Admin", "Científico"]),
+    rol: z.enum(["Estándar", "Admin", "Científico"]).optional().default("Estándar"),
     experiencia: z.number().int().optional().default(0),
     rango: rankSchema.optional()
 });
