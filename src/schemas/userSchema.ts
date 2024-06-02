@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { rankSchema } from './rankSchema';
 
 export const userSchema = z.object({
     email: z.string().email(),
@@ -9,5 +8,5 @@ export const userSchema = z.object({
     descripcion: z.string().max(255).optional(),
     rol: z.enum(["Estándar", "Admin", "Científico"]).default("Estándar"),
     experiencia: z.number().int().default(0),
-    rango: rankSchema.optional()
+    rangoId: z.number().optional()
 });

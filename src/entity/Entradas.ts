@@ -1,17 +1,16 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from "typeorm";
-import { Usuarios } from "./Usuarios";
+import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class Entradas {
     @PrimaryGeneratedColumn({ type: "integer" })
     id: number = 0;
 
-    @Column({ type: "boolean", nullable: false })
+    @Column({ type: "text", nullable: true })
     foto: string = "";
 
     @Column({ type: "boolean", nullable: false })
     original: boolean = false;
 
-    @OneToMany(_type => Usuarios, usuario => usuario.email)
-    creador: Usuarios = new Usuarios();
+    @Column({ type: "text", nullable: true })
+    creadorEmail: string | null = null;
 }

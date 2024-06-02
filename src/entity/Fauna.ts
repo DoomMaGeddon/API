@@ -1,6 +1,5 @@
-import { Entity, Column, ManyToMany, JoinTable } from "typeorm";
+import { Entity, Column } from "typeorm";
 import { Entradas } from "./Entradas";
-import { Capas } from "./Capas";
 
 @Entity()
 export class Fauna extends Entradas {
@@ -11,8 +10,8 @@ export class Fauna extends Entradas {
     @Column({ type: "varchar", length: 100, nullable: false })
     especie: string = '';
 
-    @ManyToMany(_type => Capas) @JoinTable()
-    habitat: Capas = new Capas();
+    @Column({ type: "integer", nullable: false })
+    habitat: number = 1;
 
     @Column({ type: "varchar", length: 10, nullable: false })
     peligro: string = '';

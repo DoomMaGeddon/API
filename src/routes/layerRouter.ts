@@ -2,6 +2,8 @@ import express from 'express';
 import { Capas } from '../entity/Capas';
 import datasource from "../db/datasource";
 import { layerSchema } from '../schemas/layerSchema';
+import faunaRouter from './faunaRouter';
+import floraRouter from './floraRouter';
 
 const layerRouter = express.Router();
 const layerRepository = datasource.getRepository(Capas);
@@ -20,8 +22,18 @@ layerRouter.get("/:num", async (req, res) => {
         const layer = await layerRepository.findOne({
             where: { numero: parseInt(req.params.num) }
         });
+
         if (layer) {
-            res.status(200).json(layer);
+            const fauna = faunaRouter.get("/:layerNum")
+            const flora = floraRouter.get("/:layerNum")
+            res.status(200).json(
+                {
+                    layer: {
+                        fauna: fauna,
+                        flora: flora
+                    }
+                }
+            );
         } else {
             res.status(404).send("Capa no encontrada");
         }
@@ -33,6 +45,11 @@ layerRouter.get("/:num", async (req, res) => {
 layerRouter.post("/", async (req, res) => {
     try {
         const validatedData = layerSchema.safeParse(req.body);
+        const existingLayer = await layerRepository.findOne({ where: { numero: req.body.numero } });
+
+        if (existingLayer) {
+            return res.status(400).send("La capa ya existe");
+        }
 
         if (!validatedData.success) {
             return res.status(400).json({

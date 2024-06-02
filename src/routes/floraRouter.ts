@@ -15,6 +15,17 @@ floraRouter.get("/", async (_req, res) => {
     }
 });
 
+floraRouter.get("/:layerNum", async (req, res) => {
+    try {
+        const layerNum = parseInt(req.params.layerNum);
+        const flora = await floraRepository.find({ where: { habitat: layerNum } })
+
+        res.status(200).send(flora);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+});
+
 floraRouter.get("/:id", async (req, res) => {
     try {
         const plant = await floraRepository.findOne({

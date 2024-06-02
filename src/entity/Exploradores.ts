@@ -1,6 +1,5 @@
-import { Entity, Column, ManyToOne } from "typeorm";
+import { Entity, Column } from "typeorm";
 import { Entradas } from "./Entradas";
-import { Rangos } from "./Rangos";
 
 @Entity()
 export class Exploradores extends Entradas {
@@ -17,6 +16,6 @@ export class Exploradores extends Entradas {
     @Column({ type: "varchar", length: 50, nullable: false })
     estado: string = '';
 
-    @ManyToOne(_type => Rangos)
-    rango: Rangos = new Rangos();
+    @Column({ type: "integer", nullable: true })
+    rangoId: number | null = null;
 }

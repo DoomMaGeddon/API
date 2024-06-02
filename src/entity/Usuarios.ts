@@ -1,5 +1,4 @@
-import { Entity, Column, PrimaryColumn, ManyToOne } from "typeorm";
-import { Rangos } from "./Rangos";
+import { Entity, Column, PrimaryColumn } from "typeorm";
 
 @Entity()
 export class Usuarios {
@@ -25,7 +24,7 @@ export class Usuarios {
     @Column({ type: "integer", nullable: false })
     experiencia: number = 0;
 
-    @ManyToOne(_type => Rangos)
-    rango: Rangos | null | undefined = null;
+    @Column({ type: "integer", nullable: true })
+    rangoId: number | null = null;
 }
 

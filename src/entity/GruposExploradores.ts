@@ -1,6 +1,5 @@
-import { Entity, Column, JoinColumn, OneToOne } from "typeorm";
+import { Entity, Column } from "typeorm";
 import { Entradas } from "./Entradas";
-import { Exploradores } from "./Exploradores";
 
 @Entity()
 export class GruposExploradores extends Entradas {
@@ -14,6 +13,6 @@ export class GruposExploradores extends Entradas {
     @Column({ type: "text", nullable: false })
     rango: string = '';
 
-    @OneToOne(_type => Exploradores) @JoinColumn()
-    lider: Exploradores = new Exploradores();
+    @Column({ type: "integer", nullable: false })
+    liderId: number = 0;
 }

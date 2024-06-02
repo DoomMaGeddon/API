@@ -15,6 +15,17 @@ faunaRouter.get("/", async (_req, res) => {
     }
 });
 
+faunaRouter.get("/:layerNum", async (req, res) => {
+    try {
+        const layerNum = parseInt(req.params.layerNum);
+        const fauna = await faunaRepository.find({ where: { habitat: layerNum } })
+
+        res.status(200).send(fauna);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+});
+
 faunaRouter.get("/:id", async (req, res) => {
     try {
         const fauna = await faunaRepository.findOne({

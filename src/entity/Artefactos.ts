@@ -1,5 +1,4 @@
-import { Entity, Column, ManyToOne } from "typeorm";
-import { Exploradores } from "./Exploradores";
+import { Entity, Column } from "typeorm";
 import { Entradas } from "./Entradas";
 
 @Entity()
@@ -20,7 +19,7 @@ export class Artefactos extends Entradas {
     @Column({ type: "text", nullable: false })
     origen: string = '';
 
-    @ManyToOne(_type => Exploradores)
-    duenyo: Exploradores = new Exploradores();
+    @Column({ type: "integer", nullable: true })
+    duenyoId: number | null = null;
 }
 

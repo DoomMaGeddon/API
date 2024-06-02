@@ -1,8 +1,7 @@
 import { z } from 'zod';
-import { userSchema } from './userSchema';
 
 export const entrySchema = z.object({
-    id: z.number().int(),
+    foto: z.string().optional().default(''),
     original: z.boolean(),
-    creador: userSchema.optional(),
+    creador: z.string().optional(),
 });
