@@ -2,6 +2,8 @@ import express from 'express';
 import { Flora } from '../entity/Flora';
 import datasource from "../db/datasource";
 import { floraSchema } from '../schemas/floraSchema';
+import { enviarCorreo } from '../utils/nodemailer';
+import { getEmails } from './userRouter';
 
 const floraRouter = express.Router();
 const floraRepository = datasource.getRepository(Flora);
@@ -53,6 +55,12 @@ floraRouter.post("/", async (req, res) => {
         }
 
         await floraRepository.save(floraRepository.create(req.body));
+        const users = await getEmails();
+        users.forEach((email) => {
+            if (typeof email === 'string' && email !== "") {
+                enviarCorreo(email)
+            }
+        })
         return res.status(200).send("Planta guardada correctamente");
     } catch (error) {
         return res.status(500).send("Error al guardar la planta. " + error);

@@ -2,6 +2,8 @@ import express from 'express';
 import { Fauna } from '../entity/Fauna';
 import datasource from "../db/datasource";
 import { faunaSchema } from '../schemas/faunaSchema';
+import { getEmails } from './userRouter';
+import { enviarCorreo } from '../utils/nodemailer';
 
 const faunaRouter = express.Router();
 const faunaRepository = datasource.getRepository(Fauna);
@@ -53,6 +55,12 @@ faunaRouter.post("/", async (req, res) => {
         }
 
         await faunaRepository.save(faunaRepository.create(req.body));
+        const users = await getEmails();
+        users.forEach((email) => {
+            if (typeof email === 'string' && email !== "") {
+                enviarCorreo(email)
+            }
+        })
         return res.status(200).send("Animal guardado correctamente");
     } catch (error) {
         return res.status(500).send("Error al guardar el animal. " + error);

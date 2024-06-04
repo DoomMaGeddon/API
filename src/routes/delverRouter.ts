@@ -2,6 +2,8 @@ import express from 'express';
 import { Exploradores } from '../entity/Exploradores';
 import datasource from "../db/datasource";
 import { delverSchema } from '../schemas/delverSchema';
+import { getEmails } from './userRouter';
+import { enviarCorreo } from '../utils/nodemailer';
 
 const delverRouter = express.Router();
 const delverRepository = datasource.getRepository(Exploradores);
@@ -42,6 +44,12 @@ delverRouter.post("/", async (req, res) => {
         }
 
         await delverRepository.save(delverRepository.create(validatedData.data));
+        const users = await getEmails();
+        users.forEach((email) => {
+            if (typeof email === 'string' && email !== "") {
+                enviarCorreo(email)
+            }
+        })
         return res.status(200).send("Explorador guardado correctamente");
     } catch (error) {
         return res.status(500).send("Error al guardar el explorador. " + error);
