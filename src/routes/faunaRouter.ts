@@ -3,7 +3,7 @@ import { Fauna } from '../entity/Fauna';
 import datasource from "../db/datasource";
 import { faunaSchema } from '../schemas/faunaSchema';
 import { getEmails } from './userRouter';
-import { enviarCorreo } from '../utils/nodemailer';
+import { enviarCorreoEntrada } from '../utils/nodemailer';
 
 const faunaRouter = express.Router();
 const faunaRepository = datasource.getRepository(Fauna);
@@ -58,7 +58,7 @@ faunaRouter.post("/", async (req, res) => {
         const users = await getEmails();
         users.forEach((email) => {
             if (typeof email === 'string' && email !== "") {
-                enviarCorreo(email)
+                enviarCorreoEntrada(email)
             }
         })
         return res.status(200).send("Animal guardado correctamente");

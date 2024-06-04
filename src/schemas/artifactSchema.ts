@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { entrySchema } from './entrySchema';
-import { delverSchema } from './delverSchema';
 
 export const artifactSchema = entrySchema.merge(z.object({
     nombre: z.string().max(100),
@@ -8,5 +7,5 @@ export const artifactSchema = entrySchema.merge(z.object({
     efecto: z.string(),
     descripcion: z.string(),
     origen: z.string().optional().default("Desconocido"),
-    duenyo: delverSchema,
+    duenyoId: z.number().int().optional(),
 }));

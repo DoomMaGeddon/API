@@ -8,6 +8,7 @@ import * as tokenStore from "../utils/tokenStore";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { userSchema } from '../schemas/userSchema';
+import { enviarCorreoRegistro } from '../utils/nodemailer';
 
 const userRouter = express.Router();
 const userRepository = datasource.getRepository(Usuarios);
@@ -171,6 +172,7 @@ userRouter.post("/register", async (req, res) => {
             const hashedPass = await bcrypt.hash(contrasenya, salt);
 
             await userRepository.save(userRepository.create({ email, contrasenya: hashedPass, ...data }));
+            enviarCorreoRegistro(email)
             return res.status(201).json({
                 email
             });
@@ -211,7 +213,7 @@ userRouter.post("/logout", validateToken, (req, res) => {
         if (token) {
             addToBlacklist(token);
             tokenStore.removeToken(token);
-            res.status(200).send("Sesión cerrada correctamente");
+            res.status(200).json({ status: "200", message: "Sesión cerrada correctamente" });
         } else {
             res.status(400).send("Token no encontrado");
         }

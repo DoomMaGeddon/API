@@ -2,7 +2,7 @@ import express from 'express';
 import { Flora } from '../entity/Flora';
 import datasource from "../db/datasource";
 import { floraSchema } from '../schemas/floraSchema';
-import { enviarCorreo } from '../utils/nodemailer';
+import { enviarCorreoEntrada } from '../utils/nodemailer';
 import { getEmails } from './userRouter';
 
 const floraRouter = express.Router();
@@ -58,7 +58,7 @@ floraRouter.post("/", async (req, res) => {
         const users = await getEmails();
         users.forEach((email) => {
             if (typeof email === 'string' && email !== "") {
-                enviarCorreo(email)
+                enviarCorreoEntrada(email)
             }
         })
         return res.status(200).send("Planta guardada correctamente");

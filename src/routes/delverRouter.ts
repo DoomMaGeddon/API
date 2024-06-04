@@ -3,7 +3,7 @@ import { Exploradores } from '../entity/Exploradores';
 import datasource from "../db/datasource";
 import { delverSchema } from '../schemas/delverSchema';
 import { getEmails } from './userRouter';
-import { enviarCorreo } from '../utils/nodemailer';
+import { enviarCorreoEntrada } from '../utils/nodemailer';
 
 const delverRouter = express.Router();
 const delverRepository = datasource.getRepository(Exploradores);
@@ -47,7 +47,7 @@ delverRouter.post("/", async (req, res) => {
         const users = await getEmails();
         users.forEach((email) => {
             if (typeof email === 'string' && email !== "") {
-                enviarCorreo(email)
+                enviarCorreoEntrada(email)
             }
         })
         return res.status(200).send("Explorador guardado correctamente");

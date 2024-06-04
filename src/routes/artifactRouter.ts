@@ -2,7 +2,7 @@ import express from 'express';
 import { Artefactos } from '../entity/Artefactos';
 import datasource from "../db/datasource";
 import { artifactSchema } from '../schemas/artifactSchema';
-import { enviarCorreo } from '../utils/nodemailer';
+import { enviarCorreoEntrada } from '../utils/nodemailer';
 import { z } from 'zod';
 import { getEmails } from './userRouter';
 
@@ -41,7 +41,7 @@ artifactRouter.post("/", async (req, res) => {
         const users = await getEmails();
         users.forEach((email) => {
             if (typeof email === 'string' && email !== "") {
-                enviarCorreo(email)
+                enviarCorreoEntrada(email)
             }
         })
         res.status(200).send("Artefacto guardado correctamente");

@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-export async function enviarCorreo(email: string) {
+export async function enviarCorreoEntrada(email: string) {
     const mailOptions = {
         from: 'guideinabyss@gmail.com',
         to: email,
@@ -22,6 +22,22 @@ export async function enviarCorreo(email: string) {
         await transporter.sendMail(mailOptions);
         console.log('Correo electrónico enviado correctamente a', email);
     } catch (error) {
-        console.error('Error al enviar el correo electrónico:', error);
+        console.error('Error al enviar el correo electrónico: ', error);
+    }
+}
+
+export async function enviarCorreoRegistro(email: string) {
+    const mailOptions = {
+        from: 'guideinabyss@gmail.com',
+        to: email,
+        subject: 'Gracias por registrarte',
+        text: 'Bienvenido a Guide in Abyss. Espero que disfrutes mucho de la aplicación =)'
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log('Correo electrónico enviado correctamente a', email);
+    } catch (error) {
+        console.error('Error al enviar el correo electrónico: ', error);
     }
 }

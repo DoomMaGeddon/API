@@ -19,24 +19,17 @@ layerRouter.get("/", async (_req, res) => {
 
 layerRouter.get("/:num", async (req, res) => {
     try {
-        const layer = await layerRepository.findOne({
-            where: { numero: parseInt(req.params.num) }
-        });
-
-        if (layer) {
-            const fauna = faunaRouter.get("/:layerNum")
-            const flora = floraRouter.get("/:layerNum")
-            res.status(200).json(
-                {
-                    layer: {
-                        fauna: fauna,
-                        flora: flora
-                    }
+        const layerNum = req.params.num;
+        const fauna = faunaRouter.get(`/${layerNum}`)
+        const flora = floraRouter.get(`/${layerNum}`)
+        res.status(200).json(
+            {
+                layer: {
+                    fauna: fauna,
+                    flora: flora
                 }
-            );
-        } else {
-            res.status(404).send("Capa no encontrada");
-        }
+            }
+        );
     } catch (error) {
         res.status(500).send("Error al buscar la capa. " + error);
     }
