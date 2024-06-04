@@ -12,6 +12,24 @@ import { userSchema } from '../schemas/userSchema';
 const userRouter = express.Router();
 const userRepository = datasource.getRepository(Usuarios);
 
+export async function getEmails() {
+    try {
+        const users = await userRepository.find({
+            where: { notificaciones: true },
+            select: ["email"]
+        });
+
+        if (users && users.length > 0) {
+            const emails = users.map(user => user.email);
+            return emails;
+        } else {
+            return [];
+        }
+    } catch (error) {
+        return [error];
+    }
+}
+
 userRouter.get("/", async (_req, res) => {
     try {
         const users = await userRepository.find();

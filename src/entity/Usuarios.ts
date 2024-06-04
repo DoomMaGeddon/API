@@ -24,6 +24,9 @@ export class Usuarios {
     @Column({ type: "integer", nullable: false })
     experiencia: number = 0;
 
+    @Column({ type: "bool", nullable: false })
+    notificaciones: boolean = true;
+
     @Column({ type: "integer", nullable: true })
     rangoId: number | null = null;
 }

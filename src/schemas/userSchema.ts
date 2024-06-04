@@ -8,5 +8,6 @@ export const userSchema = z.object({
     descripcion: z.string().max(255).optional(),
     rol: z.enum(["Estándar", "Admin", "Científico"]).default("Estándar"),
     experiencia: z.number().int().default(0),
+    notificaciones: z.boolean().default(true),
     rangoId: z.number().optional()
 });

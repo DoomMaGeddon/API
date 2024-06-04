@@ -2,7 +2,9 @@ import express from 'express';
 import { Artefactos } from '../entity/Artefactos';
 import datasource from "../db/datasource";
 import { artifactSchema } from '../schemas/artifactSchema';
+import { enviarCorreo } from '../utils/nodemailer';
 import { z } from 'zod';
+import { getEmails } from './userRouter';
 
 const artifactRouter = express.Router();
 const artifactRepository = datasource.getRepository(Artefactos);
@@ -36,6 +38,12 @@ artifactRouter.post("/", async (req, res) => {
         const validatedData = artifactSchema.parse(req.body); //Me apetecía usar ambos métodos de validación
         const newArtifact = artifactRepository.create(validatedData);
         await artifactRepository.save(newArtifact);
+        const users = await getEmails();
+        users.forEach((email) => {
+            if (typeof email === 'string' && email !== "") {
+                enviarCorreo(email)
+            }
+        })
         res.status(200).send("Artefacto guardado correctamente");
     } catch (error) {
         if (error instanceof z.ZodError) {
