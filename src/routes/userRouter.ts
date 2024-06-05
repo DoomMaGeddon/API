@@ -125,28 +125,32 @@ userRouter.get("/me", validateToken, async (req, res) => {
     }
 });
 
-userRouter.put("/me", validateToken, async (req, res) => {
+userRouter.put("/me/update", validateToken, async (req, res) => {
     try {
-        const validatedData = userSchema.safeParse(req.body);
-
-        if (!validatedData.success) {
-            return res.status(400).json({
-                message: "Error al validar el usuario",
-                errors: validatedData.error.errors,
-            });
-        }
-
         const { contrasenya, ...data } = req.body;
-        const email = req.body.user;
 
-        if (contrasenya) {
+        if (contrasenya === undefined || contrasenya === "") {
+            delete data.contrasenya;
+        } else {
+            const validatedData = userSchema.safeParse(data);
+            if (!validatedData.success) {
+                return res.status(400).json({
+                    message: "Error al validar el usuario",
+                    errors: validatedData.error.errors
+                });
+            }
+
             const salt = await bcrypt.genSalt(10);
             data.contrasenya = await bcrypt.hash(contrasenya, salt);
         }
 
+        const email = req.body.email;
+
         await userRepository.update(email, data);
-        return res.status(200).send("Información del usuario actualizada correctamente");
+
+        return res.status(200).json({ status: "200", message: "Información del usuario actualizada correctamente" });
     } catch (error) {
+        console.error(error);
         return res.status(500).send("Error al actualizar la información del usuario");
     }
 });
