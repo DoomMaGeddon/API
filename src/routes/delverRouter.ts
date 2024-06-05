@@ -4,6 +4,7 @@ import datasource from "../db/datasource";
 import { delverSchema } from '../schemas/delverSchema';
 import { getEmails } from './userRouter';
 import { enviarCorreoEntrada } from '../utils/nodemailer';
+import jwt from 'jsonwebtoken';
 
 const delverRouter = express.Router();
 const delverRepository = datasource.getRepository(Exploradores);
@@ -34,6 +35,17 @@ delverRouter.get("/:id", async (req, res) => {
 
 delverRouter.post("/", async (req, res) => {
     try {
+        const { email: tokenEmail } = jwt.decode(req.header("auth-token") as string) as { email: string };
+        const { rol: tokenRol } = jwt.decode(req.header("auth-token") as string) as { rol: string };
+
+        if (tokenRol === "Estándar") {
+            return res.status(401).json({ error: "Solo usuarios con rol Científico o Admin pueden realizar esta acción" });
+        }
+
+        if (tokenEmail !== req.body.email) {
+            return res.status(401).json({ error: "El correo electrónico de la petición no pertenece al usuario logueado" });
+        }
+
         const validatedData = delverSchema.safeParse(req.body);
 
         if (!validatedData.success) {

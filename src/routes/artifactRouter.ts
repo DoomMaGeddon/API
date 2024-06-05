@@ -5,6 +5,7 @@ import { artifactSchema } from '../schemas/artifactSchema';
 import { enviarCorreoEntrada } from '../utils/nodemailer';
 import { z } from 'zod';
 import { getEmails } from './userRouter';
+import jwt from 'jsonwebtoken';
 
 const artifactRouter = express.Router();
 const artifactRepository = datasource.getRepository(Artefactos);
@@ -35,24 +36,42 @@ artifactRouter.get("/:id", async (req, res) => {
 
 artifactRouter.post("/", async (req, res) => {
     try {
-        const validatedData = artifactSchema.parse(req.body); //Me apetecía usar ambos métodos de validación
-        const newArtifact = artifactRepository.create(validatedData);
-        await artifactRepository.save(newArtifact);
+        const { email: tokenEmail } = jwt.decode(req.header("auth-token") as string) as { email: string };
+        const { rol: tokenRol } = jwt.decode(req.header("auth-token") as string) as { rol: string };
+
+        if (tokenRol === "Estándar") {
+            return res.status(401).json({ error: "Solo usuarios con rol Científico o Admin pueden realizar esta acción" });
+        }
+
+        if (tokenEmail !== req.body.email) {
+            return res.status(401).json({ error: "El correo electrónico de la petición no pertenece al usuario logueado" });
+        }
+
+        const validatedData = artifactSchema.safeParse(req.body);
+
+        if (!validatedData.success) {
+            return res.status(400).json({
+                message: "Error al validar el artefacto",
+                errors: validatedData.error.errors,
+            });
+        }
+
+        await artifactRepository.save(artifactRepository.create(req.body));
         const users = await getEmails();
         users.forEach((email) => {
             if (typeof email === 'string' && email !== "") {
                 enviarCorreoEntrada(email)
             }
         })
-        res.status(200).send("Artefacto guardado correctamente");
+        return res.status(200).send("Artefacto guardado correctamente");
     } catch (error) {
         if (error instanceof z.ZodError) {
-            res.status(400).json({
+            return res.status(400).json({
                 message: "Error al validar los datos",
                 errors: error.errors,
             });
         } else {
-            res.status(500).send("Error al guardar el artefacto.\n" + error);
+            return res.status(500).send("Error al guardar el artefacto.\n" + error);
         }
     }
 });
@@ -61,7 +80,7 @@ artifactRouter.put("/:id", async (req, res) => {
     try {
         const validatedData = artifactSchema.safeParse(req.body);
 
-        if (!validatedData.success) { //Este método de validación me parece más cómodo, por lo que será el que use en el resto
+        if (!validatedData.success) {
             return res.status(400).json({
                 message: "Error al validar el artefacto",
                 errors: validatedData.error.errors,

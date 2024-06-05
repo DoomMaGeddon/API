@@ -2,8 +2,6 @@ import express from 'express';
 import { Capas } from '../entity/Capas';
 import datasource from "../db/datasource";
 import { layerSchema } from '../schemas/layerSchema';
-import faunaRouter from './faunaRouter';
-import floraRouter from './floraRouter';
 
 const layerRouter = express.Router();
 const layerRepository = datasource.getRepository(Capas);
@@ -19,17 +17,8 @@ layerRouter.get("/", async (_req, res) => {
 
 layerRouter.get("/:num", async (req, res) => {
     try {
-        const layerNum = req.params.num;
-        const fauna = faunaRouter.get(`/${layerNum}`)
-        const flora = floraRouter.get(`/${layerNum}`)
-        res.status(200).json(
-            {
-                layer: {
-                    fauna: fauna,
-                    flora: flora
-                }
-            }
-        );
+        const layer = await layerRepository.findOne({ where: { numero: parseInt(req.params.num) } });
+        res.status(200).json({ layer: layer });
     } catch (error) {
         res.status(500).send("Error al buscar la capa. " + error);
     }

@@ -207,7 +207,7 @@ userRouter.post("/login", async (req, res) => {
 
         user.contrasenya = "";
 
-        const token = jwt.sign({ email: user.email }, TOKEN_SECRET as string, { expiresIn: JWT_EXPIRES });
+        const token = jwt.sign({ email: user.email, rol: user.rol }, TOKEN_SECRET as string, { expiresIn: JWT_EXPIRES });
         tokenStore.addToken(token);
         return res.header("auth-token", token).status(200).json({ token, user });
 

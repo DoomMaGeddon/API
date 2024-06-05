@@ -4,6 +4,8 @@ import datasource from "../db/datasource";
 import { faunaSchema } from '../schemas/faunaSchema';
 import { getEmails } from './userRouter';
 import { enviarCorreoEntrada } from '../utils/nodemailer';
+import validateToken from '../utils/validateToken';
+import jwt from 'jsonwebtoken';
 
 const faunaRouter = express.Router();
 const faunaRepository = datasource.getRepository(Fauna);
@@ -43,8 +45,20 @@ faunaRouter.get("/:id", async (req, res) => {
     }
 });
 
-faunaRouter.post("/", async (req, res) => {
+faunaRouter.post("/", validateToken, async (req, res) => {
     try {
+        const { ...data } = req.body;
+        const { email: tokenEmail } = jwt.decode(req.header("auth-token") as string) as { email: string };
+        const { rol: tokenRol } = jwt.decode(req.header("auth-token") as string) as { rol: string };
+
+        if (tokenRol === "Estándar") {
+            return res.status(401).json({ error: "Solo usuarios con rol Científico o Admin pueden realizar esta acción" });
+        }
+
+        if (tokenEmail !== data.email) {
+            return res.status(401).json({ error: "El correo electrónico de la petición no pertenece al usuario logueado" });
+        }
+
         const validatedData = faunaSchema.safeParse(req.body);
 
         if (!validatedData.success) {
