@@ -127,9 +127,14 @@ userRouter.get("/me", validateToken, async (req, res) => {
 
 userRouter.put("/me/update", validateToken, async (req, res) => {
     try {
-        const { contrasenya, ...data } = req.body;
+        const { ...data } = req.body;
+        const { email: tokenEmail } = jwt.decode(req.header("auth-token") as string) as { email: string };
 
-        if (contrasenya === undefined || contrasenya === "") {
+        if (tokenEmail !== data.email) {
+            return res.status(401).json({ error: "El correo electrónico de la petición no pertenece al usuario a actualizar" });
+        }
+
+        if (data.contrasenya === undefined || data.contrasenya === "") {
             delete data.contrasenya;
         } else {
             const validatedData = userSchema.safeParse(data);
@@ -141,7 +146,7 @@ userRouter.put("/me/update", validateToken, async (req, res) => {
             }
 
             const salt = await bcrypt.genSalt(10);
-            data.contrasenya = await bcrypt.hash(contrasenya, salt);
+            data.contrasenya = await bcrypt.hash(data.contrasenya, salt);
         }
 
         const email = req.body.email;

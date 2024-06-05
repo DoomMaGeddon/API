@@ -2,6 +2,7 @@ import express from 'express';
 import { Solicitudes } from '../entity/Solicitudes';
 import datasource from "../db/datasource";
 import { requestSchema } from '../schemas/requestSchema';
+import validateToken from '../utils/validateToken';
 
 const requestRouter = express.Router();
 const requestRepository = datasource.getRepository(Solicitudes);
@@ -30,19 +31,20 @@ requestRouter.get("/:id", async (req, res) => {
     }
 });
 
-requestRouter.post("/", async (req, res) => {
+requestRouter.post("/", validateToken, async (req, res) => {
     try {
         const validatedData = requestSchema.safeParse(req.body);
 
         if (!validatedData.success) {
             return res.status(400).json({
+                status: "400",
                 message: "Error al validar la petición",
                 errors: validatedData.error.errors,
             });
         }
 
         await requestRepository.save(requestRepository.create(validatedData.data));
-        return res.status(200).send("Petición guardado correctamente");
+        return res.status(200).json({ status: "200", message: "Petición guardada correctamente" });
     } catch (error) {
         return res.status(500).send("Error al guardar la petición. " + error);
     }
