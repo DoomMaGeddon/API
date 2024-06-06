@@ -45,6 +45,17 @@ faunaRouter.get("/:id", async (req, res) => {
     }
 });
 
+faunaRouter.get("/me/history", validateToken, async (req, res) => {
+    try {
+        const { email: tokenEmail } = jwt.decode(req.header("auth-token") as string) as { email: string };
+        const fauna = await faunaRepository.find({ where: { creadorEmail: tokenEmail } })
+
+        res.status(200).json({ fauna });
+    } catch (error) {
+        res.status(500).send(error);
+    }
+});
+
 faunaRouter.post("/", validateToken, async (req, res) => {
     try {
         const { rol: tokenRol } = jwt.decode(req.header("auth-token") as string) as { rol: string };

@@ -6,5 +6,5 @@ export const delverSchema = entrySchema.merge(z.object({
     genero: z.string().max(10),
     especie: z.string().max(20),
     estado: z.string().max(20),
-    rango: z.number().int()
+    rangoId: z.number().int()
 }));

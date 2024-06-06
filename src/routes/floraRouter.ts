@@ -45,6 +45,18 @@ floraRouter.get("/:id", async (req, res) => {
     }
 });
 
+floraRouter.get("/me/history", async (req, res) => {
+    try {
+        const { email: tokenEmail } = jwt.decode(req.header("auth-token") as string) as { email: string };
+        const flora = await floraRepository.find({ where: { creadorEmail: tokenEmail } })
+
+        res.status(200).json({ flora });
+    } catch (error) {
+        res.status(500).send(error);
+    }
+});
+
+
 floraRouter.post("/", validateToken, async (req, res) => {
     try {
         const { rol: tokenRol } = jwt.decode(req.header("auth-token") as string) as { rol: string };
