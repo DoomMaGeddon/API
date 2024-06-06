@@ -47,16 +47,10 @@ faunaRouter.get("/:id", async (req, res) => {
 
 faunaRouter.post("/", validateToken, async (req, res) => {
     try {
-        const { ...data } = req.body;
-        const { email: tokenEmail } = jwt.decode(req.header("auth-token") as string) as { email: string };
         const { rol: tokenRol } = jwt.decode(req.header("auth-token") as string) as { rol: string };
 
         if (tokenRol === "Estándar") {
             return res.status(401).json({ error: "Solo usuarios con rol Científico o Admin pueden realizar esta acción" });
-        }
-
-        if (tokenEmail !== data.email) {
-            return res.status(401).json({ error: "El correo electrónico de la petición no pertenece al usuario logueado" });
         }
 
         const validatedData = faunaSchema.safeParse(req.body);
@@ -75,7 +69,7 @@ faunaRouter.post("/", validateToken, async (req, res) => {
                 enviarCorreoEntrada(email)
             }
         })
-        return res.status(200).send("Animal guardado correctamente");
+        return res.status(200).json({ status: "200", message: "Animal guardado correctamente" });
     } catch (error) {
         return res.status(500).send("Error al guardar el animal. " + error);
     }

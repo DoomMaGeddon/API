@@ -35,15 +35,10 @@ delverRouter.get("/:id", async (req, res) => {
 
 delverRouter.post("/", async (req, res) => {
     try {
-        const { email: tokenEmail } = jwt.decode(req.header("auth-token") as string) as { email: string };
         const { rol: tokenRol } = jwt.decode(req.header("auth-token") as string) as { rol: string };
 
         if (tokenRol === "Estándar") {
             return res.status(401).json({ error: "Solo usuarios con rol Científico o Admin pueden realizar esta acción" });
-        }
-
-        if (tokenEmail !== req.body.email) {
-            return res.status(401).json({ error: "El correo electrónico de la petición no pertenece al usuario logueado" });
         }
 
         const validatedData = delverSchema.safeParse(req.body);
@@ -62,7 +57,7 @@ delverRouter.post("/", async (req, res) => {
                 enviarCorreoEntrada(email)
             }
         })
-        return res.status(200).send("Explorador guardado correctamente");
+        return res.status(200).json({ status: "200", message: "Explorador guardado correctamente" });
     } catch (error) {
         return res.status(500).send("Error al guardar el explorador. " + error);
     }

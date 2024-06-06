@@ -36,15 +36,10 @@ artifactRouter.get("/:id", async (req, res) => {
 
 artifactRouter.post("/", async (req, res) => {
     try {
-        const { email: tokenEmail } = jwt.decode(req.header("auth-token") as string) as { email: string };
         const { rol: tokenRol } = jwt.decode(req.header("auth-token") as string) as { rol: string };
 
         if (tokenRol === "Estándar") {
             return res.status(401).json({ error: "Solo usuarios con rol Científico o Admin pueden realizar esta acción" });
-        }
-
-        if (tokenEmail !== req.body.email) {
-            return res.status(401).json({ error: "El correo electrónico de la petición no pertenece al usuario logueado" });
         }
 
         const validatedData = artifactSchema.safeParse(req.body);
@@ -63,7 +58,7 @@ artifactRouter.post("/", async (req, res) => {
                 enviarCorreoEntrada(email)
             }
         })
-        return res.status(200).send("Artefacto guardado correctamente");
+        return res.status(200).json({ status: "200", message: "Artefacto guardado correctamente" });
     } catch (error) {
         if (error instanceof z.ZodError) {
             return res.status(400).json({
