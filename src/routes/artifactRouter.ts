@@ -4,7 +4,7 @@ import datasource from "../db/datasource";
 import { artifactSchema } from '../schemas/artifactSchema';
 import { enviarCorreoEntrada } from '../utils/nodemailer';
 import { z } from 'zod';
-import { getEmails } from './userRouter';
+import { getEmails, giveExp } from './userRouter';
 import jwt from 'jsonwebtoken';
 import validateToken from '../utils/validateToken';
 
@@ -68,7 +68,12 @@ artifactRouter.post("/", validateToken, async (req, res) => {
             if (typeof email === 'string' && email !== "") {
                 enviarCorreoEntrada(email)
             }
-        })
+        });
+
+        if (validatedData.data.original && validatedData.data.creadorEmail) {
+            giveExp(validatedData.data.creadorEmail);
+        }
+
         return res.status(200).json({ status: "200", message: "Artefacto guardado correctamente" });
     } catch (error) {
         if (error instanceof z.ZodError) {

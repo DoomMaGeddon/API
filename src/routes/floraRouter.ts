@@ -3,7 +3,7 @@ import { Flora } from '../entity/Flora';
 import datasource from "../db/datasource";
 import { floraSchema } from '../schemas/floraSchema';
 import { enviarCorreoEntrada } from '../utils/nodemailer';
-import { getEmails } from './userRouter';
+import { getEmails, giveExp } from './userRouter';
 import validateToken from '../utils/validateToken';
 import jwt from 'jsonwebtoken';
 
@@ -75,12 +75,18 @@ floraRouter.post("/", validateToken, async (req, res) => {
         }
 
         await floraRepository.save(floraRepository.create(req.body));
+
         const users = await getEmails();
         users.forEach((email) => {
             if (typeof email === 'string' && email !== "") {
                 enviarCorreoEntrada(email)
             }
-        })
+        });
+
+        if (validatedData.data.original && validatedData.data.creadorEmail) {
+            giveExp(validatedData.data.creadorEmail);
+        }
+
         return res.status(200).json({ status: "200", message: "Planta guardada correctamente" });
     } catch (error) {
         return res.status(500).send("Error al guardar la planta. " + error);

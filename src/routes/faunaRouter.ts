@@ -2,7 +2,7 @@ import express from 'express';
 import { Fauna } from '../entity/Fauna';
 import datasource from "../db/datasource";
 import { faunaSchema } from '../schemas/faunaSchema';
-import { getEmails } from './userRouter';
+import { getEmails, giveExp } from './userRouter';
 import { enviarCorreoEntrada } from '../utils/nodemailer';
 import validateToken from '../utils/validateToken';
 import jwt from 'jsonwebtoken';
@@ -74,12 +74,18 @@ faunaRouter.post("/", validateToken, async (req, res) => {
         }
 
         await faunaRepository.save(faunaRepository.create(req.body));
+
         const users = await getEmails();
         users.forEach((email) => {
             if (typeof email === 'string' && email !== "") {
                 enviarCorreoEntrada(email)
             }
-        })
+        });
+
+        if (validatedData.data.original && validatedData.data.creadorEmail) {
+            giveExp(validatedData.data.creadorEmail);
+        }
+
         return res.status(200).json({ status: "200", message: "Animal guardado correctamente" });
     } catch (error) {
         return res.status(500).send("Error al guardar el animal. " + error);

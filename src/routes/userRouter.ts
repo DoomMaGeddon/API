@@ -1,5 +1,6 @@
 import express from 'express';
 import { Usuarios } from '../entity/Usuarios';
+import { Rangos } from '../entity/Rangos';
 import { JWT_EXPIRES, TOKEN_SECRET } from '../config/env-variables';
 import datasource from "../db/datasource";
 import validateToken from "../utils/validateToken";
@@ -13,6 +14,7 @@ import { userUpdateSchema } from '../schemas/userUpdateSchema';
 
 const userRouter = express.Router();
 const userRepository = datasource.getRepository(Usuarios);
+const rankRepository = datasource.getRepository(Rangos);
 
 export async function getEmails() {
     try {
@@ -271,5 +273,39 @@ userRouter.post("/logout", validateToken, (req, res) => {
         res.status(500).send("Error al cerrar sesión");
     }
 });
+
+export async function giveExp(userEmail: string) {
+    try {
+        const user = await userRepository.findOne({ where: { email: userEmail } });
+
+        if (!user) {
+            console.error("No se ha encontrado el usuario en el método giveExp");
+            return false;
+        }
+
+        user.experiencia += 10;
+
+        const rangos = await rankRepository.find();
+
+        if (!rangos || rangos.length == 0) {
+            console.error("No se ha encontrado rangos en el método giveExp");
+            return false;
+        }
+
+        rangos.forEach((rango) => {
+            if (user.experiencia > rango.requisito) {
+                user.rangoId = rango.id;
+            }
+        })
+
+        const { email, ...data } = user;
+        await userRepository.update(userEmail, data);
+        return true
+    } catch (error) {
+        console.error("No se ha podido actualizar el usuario en el método giveExp");
+        console.error(error);
+        return false;
+    }
+}
 
 export default userRouter;

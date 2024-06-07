@@ -2,7 +2,7 @@ import express from 'express';
 import { Exploradores } from '../entity/Exploradores';
 import datasource from "../db/datasource";
 import { delverSchema } from '../schemas/delverSchema';
-import { getEmails } from './userRouter';
+import { getEmails, giveExp } from './userRouter';
 import { enviarCorreoEntrada } from '../utils/nodemailer';
 import jwt from 'jsonwebtoken';
 import validateToken from '../utils/validateToken';
@@ -47,7 +47,7 @@ delverRouter.get("/me/history", validateToken, async (req, res) => {
 delverRouter.get("/ids/all/list", async (_req, res) => {
     try {
         const delvers = await delverRepository.find();
-        const delverIds = delvers.map(delver => delver.id);
+        const delverIds = delvers.map(delver => delver.id + "");
         res.status(200).send(delverIds);
     } catch (error) {
         res.status(500).send(error);
@@ -86,7 +86,12 @@ delverRouter.post("/", validateToken, async (req, res) => {
             if (typeof email === 'string' && email !== "") {
                 enviarCorreoEntrada(email)
             }
-        })
+        });
+
+        if (validatedData.data.original && validatedData.data.creadorEmail) {
+            giveExp(validatedData.data.creadorEmail);
+        }
+
         return res.status(200).json({ status: "200", message: "Explorador guardado correctamente" });
     } catch (error) {
         return res.status(500).send("Error al guardar el explorador. " + error);
