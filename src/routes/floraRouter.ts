@@ -45,7 +45,7 @@ floraRouter.get("/:id", async (req, res) => {
     }
 });
 
-floraRouter.get("/me/history", async (req, res) => {
+floraRouter.get("/me/history", validateToken, async (req, res) => {
     try {
         const { email: tokenEmail } = jwt.decode(req.header("auth-token") as string) as { email: string };
         const flora = await floraRepository.find({ where: { creadorEmail: tokenEmail } })
@@ -87,8 +87,14 @@ floraRouter.post("/", validateToken, async (req, res) => {
     }
 });
 
-floraRouter.put("/:id", async (req, res) => {
+floraRouter.put("/:id", validateToken, async (req, res) => {
     try {
+        const { rol: tokenRol } = jwt.decode(req.header("auth-token") as string) as { rol: string };
+
+        if (tokenRol !== "Admin") {
+            return res.status(401).json({ error: "Solo administradores pueden realizar esta acción" });
+        }
+
         const validatedData = floraSchema.safeParse(req.body);
 
         if (!validatedData.success) {
@@ -105,12 +111,18 @@ floraRouter.put("/:id", async (req, res) => {
     }
 });
 
-floraRouter.delete("/:id", async (req, res) => {
+floraRouter.delete("/:id", validateToken, async (req, res) => {
     try {
+        const { rol: tokenRol } = jwt.decode(req.header("auth-token") as string) as { rol: string };
+
+        if (tokenRol !== "Admin") {
+            return res.status(401).json({ error: "Solo administradores pueden realizar esta acción" });
+        }
+
         await floraRepository.delete(req.params.id);
-        res.status(200).send("Planta eliminada correctamente");
+        return res.status(200).send("Planta eliminada correctamente");
     } catch (error) {
-        res.status(500).send("Error al eliminar la planta");
+        return res.status(500).send("Error al eliminar la planta");
     }
 });
 

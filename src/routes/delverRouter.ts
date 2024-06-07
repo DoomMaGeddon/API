@@ -5,6 +5,7 @@ import { delverSchema } from '../schemas/delverSchema';
 import { getEmails } from './userRouter';
 import { enviarCorreoEntrada } from '../utils/nodemailer';
 import jwt from 'jsonwebtoken';
+import validateToken from '../utils/validateToken';
 
 const delverRouter = express.Router();
 const delverRepository = datasource.getRepository(Exploradores);
@@ -33,7 +34,7 @@ delverRouter.get("/:id", async (req, res) => {
     }
 });
 
-delverRouter.get("/me/history", async (req, res) => {
+delverRouter.get("/me/history", validateToken, async (req, res) => {
     try {
         const { email: tokenEmail } = jwt.decode(req.header("auth-token") as string) as { email: string };
         const delvers = await delverRepository.find({ where: { creadorEmail: tokenEmail } });
@@ -43,7 +44,26 @@ delverRouter.get("/me/history", async (req, res) => {
     }
 });
 
-delverRouter.post("/", async (req, res) => {
+delverRouter.get("/ids/all/list", async (_req, res) => {
+    try {
+        const delvers = await delverRepository.find();
+        const delverIds = delvers.map(delver => delver.id);
+        res.status(200).send(delverIds);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+});
+
+delverRouter.get("/", async (_req, res) => {
+    try {
+        const delvers = await delverRepository.find();
+        res.status(200).send(delvers);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+});
+
+delverRouter.post("/", validateToken, async (req, res) => {
     try {
         const { rol: tokenRol } = jwt.decode(req.header("auth-token") as string) as { rol: string };
 
@@ -73,8 +93,14 @@ delverRouter.post("/", async (req, res) => {
     }
 });
 
-delverRouter.put("/:id", async (req, res) => {
+delverRouter.put("/:id", validateToken, async (req, res) => {
     try {
+        const { rol: tokenRol } = jwt.decode(req.header("auth-token") as string) as { rol: string };
+
+        if (tokenRol !== "Admin") {
+            return res.status(401).json({ error: "Solo administradores pueden realizar esta acción" });
+        }
+
         const validatedData = delverSchema.safeParse(req.body);
 
         if (!validatedData.success) {
@@ -91,12 +117,18 @@ delverRouter.put("/:id", async (req, res) => {
     }
 });
 
-delverRouter.delete("/:id", async (req, res) => {
+delverRouter.delete("/:id", validateToken, async (req, res) => {
     try {
+        const { rol: tokenRol } = jwt.decode(req.header("auth-token") as string) as { rol: string };
+
+        if (tokenRol !== "Admin") {
+            return res.status(401).json({ error: "Solo administradores pueden realizar esta acción" });
+        }
+
         await delverRepository.delete(req.params.id);
-        res.status(200).send("Explorador eliminado correctamente");
+        return res.status(200).send("Explorador eliminado correctamente");
     } catch (error) {
-        res.status(500).send("Error al eliminar el explorador");
+        return res.status(500).send("Error al eliminar el explorador");
     }
 });
 

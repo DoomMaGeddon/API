@@ -86,8 +86,14 @@ faunaRouter.post("/", validateToken, async (req, res) => {
     }
 });
 
-faunaRouter.put("/:id", async (req, res) => {
+faunaRouter.put("/:id", validateToken, async (req, res) => {
     try {
+        const { rol: tokenRol } = jwt.decode(req.header("auth-token") as string) as { rol: string };
+
+        if (tokenRol === "Estándar") {
+            return res.status(401).json({ error: "Solo usuarios con rol Científico o Admin pueden realizar esta acción" });
+        }
+
         const validatedData = faunaSchema.safeParse(req.body);
 
         if (!validatedData.success) {
@@ -104,12 +110,18 @@ faunaRouter.put("/:id", async (req, res) => {
     }
 });
 
-faunaRouter.delete("/:id", async (req, res) => {
+faunaRouter.delete("/:id", validateToken, async (req, res) => {
     try {
+        const { rol: tokenRol } = jwt.decode(req.header("auth-token") as string) as { rol: string };
+
+        if (tokenRol !== "Admin") {
+            return res.status(401).json({ error: "Solo administradores pueden realizar esta acción" });
+        }
+
         await faunaRepository.delete(req.params.id);
-        res.status(200).send("Animal eliminado correctamente");
+        return res.status(200).send("Animal eliminado correctamente");
     } catch (error) {
-        res.status(500).send("Error al eliminar el animal");
+        return res.status(500).send("Error al eliminar el animal");
     }
 });
 

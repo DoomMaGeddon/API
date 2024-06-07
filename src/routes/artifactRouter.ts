@@ -6,6 +6,7 @@ import { enviarCorreoEntrada } from '../utils/nodemailer';
 import { z } from 'zod';
 import { getEmails } from './userRouter';
 import jwt from 'jsonwebtoken';
+import validateToken from '../utils/validateToken';
 
 const artifactRouter = express.Router();
 const artifactRepository = datasource.getRepository(Artefactos);
@@ -34,7 +35,7 @@ artifactRouter.get("/:id", async (req, res) => {
     }
 });
 
-artifactRouter.get("/me/history", async (req, res) => {
+artifactRouter.get("/me/history", validateToken, async (req, res) => {
     try {
         const { email: tokenEmail } = jwt.decode(req.header("auth-token") as string) as { email: string };
         const artifacts = await artifactRepository.find({ where: { creadorEmail: tokenEmail } });
@@ -44,7 +45,7 @@ artifactRouter.get("/me/history", async (req, res) => {
     }
 });
 
-artifactRouter.post("/", async (req, res) => {
+artifactRouter.post("/", validateToken, async (req, res) => {
     try {
         const { rol: tokenRol } = jwt.decode(req.header("auth-token") as string) as { rol: string };
 
@@ -81,8 +82,14 @@ artifactRouter.post("/", async (req, res) => {
     }
 });
 
-artifactRouter.put("/:id", async (req, res) => {
+artifactRouter.put("/:id", validateToken, async (req, res) => {
     try {
+        const { rol: tokenRol } = jwt.decode(req.header("auth-token") as string) as { rol: string };
+
+        if (tokenRol !== "Admin") {
+            return res.status(401).json({ error: "Solo administradores pueden realizar esta acción" });
+        }
+
         const validatedData = artifactSchema.safeParse(req.body);
 
         if (!validatedData.success) {
@@ -99,12 +106,18 @@ artifactRouter.put("/:id", async (req, res) => {
     }
 });
 
-artifactRouter.delete("/:id", async (req, res) => {
+artifactRouter.delete("/:id", validateToken, async (req, res) => {
     try {
+        const { rol: tokenRol } = jwt.decode(req.header("auth-token") as string) as { rol: string };
+
+        if (tokenRol !== "Admin") {
+            return res.status(401).json({ error: "Solo administradores pueden realizar esta acción" });
+        }
+
         await artifactRepository.delete(req.params.id);
-        res.status(200).send("Artefacto eliminado correctamente");
+        return res.status(200).send("Artefacto eliminado correctamente");
     } catch (error) {
-        res.status(500).send("Error al eliminar el artefacto");
+        return res.status(500).send("Error al eliminar el artefacto");
     }
 });
 

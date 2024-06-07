@@ -9,6 +9,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { userSchema } from '../schemas/userSchema';
 import { enviarCorreoRegistro } from '../utils/nodemailer';
+import { userUpdateSchema } from '../schemas/userUpdateSchema';
 
 const userRouter = express.Router();
 const userRepository = datasource.getRepository(Usuarios);
@@ -31,17 +32,29 @@ export async function getEmails() {
     }
 }
 
-userRouter.get("/", async (_req, res) => {
+userRouter.get("/", validateToken, async (req, res) => {
     try {
+        const { rol: tokenRol } = jwt.decode(req.header("auth-token") as string) as { rol: string };
+
+        if (tokenRol !== "Admin") {
+            return res.status(401).json({ error: "Solo los administradores pueden realizar esta acción" });
+        }
+
         const users = await userRepository.find();
-        res.status(200).send(users);
+        return res.status(200).send(users);
     } catch (error) {
-        res.status(500).send(error);
+        return res.status(500).send(error);
     }
 });
 
-userRouter.get("/:email", async (req, res) => {
+userRouter.get("/:email", validateToken, async (req, res) => {
     try {
+        const { rol: tokenRol } = jwt.decode(req.header("auth-token") as string) as { rol: string };
+
+        if (tokenRol !== "Admin") {
+            return res.status(401).json({ error: "Solo los administradores pueden realizar esta acción" });
+        }
+
         const user = await userRepository.findOne(
             {
                 where:
@@ -49,18 +62,25 @@ userRouter.get("/:email", async (req, res) => {
             }
         );
         if (user) {
-            res.status(200).json(user);
+            return res.status(200).json(user);
         } else {
-            res.status(404).send("Usuario no encontrado");
+            return res.status(404).send("Usuario no encontrado");
         }
     } catch (error) {
-        res.status(500).send("Error al buscar el usuario. " + error);
+        return res.status(500).send("Error al buscar el usuario. " + error);
     }
 });
 
 userRouter.post("/", async (req, res) => {
     try {
-        const validatedData = userSchema.safeParse(req.body);
+        const { rol: tokenRol } = jwt.decode(req.header("auth-token") as string) as { rol: string };
+        const { ...data } = req.body;
+
+        if (tokenRol !== "Admin") {
+            return res.status(401).json({ error: "Solo los administradores pueden realizar esta acción" });
+        }
+
+        const validatedData = userSchema.safeParse(data);
 
         if (!validatedData.success) {
             return res.status(400).json({
@@ -69,29 +89,44 @@ userRouter.post("/", async (req, res) => {
             });
         }
 
-        await userRepository.save(userRepository.create(validatedData.data));
+        if (data.contrasenya) {
+            const salt = await bcrypt.genSalt(10);
+            data.contrasenya = await bcrypt.hash(data.contrasenya, salt);
+        }
+
+        await userRepository.save(userRepository.create(data));
         return res.status(200).send("Usuario guardado correctamente");
     } catch (error) {
         return res.status(500).send("Error al guardar el usuario. " + error);
     }
 });
 
-userRouter.put("/:email", async (req, res) => {
+userRouter.put("/:email", validateToken, async (req, res) => {
     try {
-        const validatedData = userSchema.safeParse(req.body);
+        const { rol: tokenRol } = jwt.decode(req.header("auth-token") as string) as { rol: string };
+        const { ...data } = req.body;
+
+        if (tokenRol !== "Admin") {
+            return res.status(401).json({ error: "Solo los administradores pueden realizar esta acción" });
+        }
+
+        if (data.email) {
+            delete data.email;
+        }
+
+        const validatedData = userUpdateSchema.safeParse(data);
 
         if (!validatedData.success) {
+            console.log(validatedData.error.errors)
             return res.status(400).json({
                 message: "Error al validar el usuario",
                 errors: validatedData.error.errors,
             });
         }
 
-        const { contrasenya, ...data } = req.body;
-
-        if (contrasenya) {
+        if (data.contrasenya) {
             const salt = await bcrypt.genSalt(10);
-            data.contrasenya = await bcrypt.hash(contrasenya, salt);
+            data.contrasenya = await bcrypt.hash(data.contrasenya, salt);
         }
 
         await userRepository.update(req.params.email, data);
@@ -103,10 +138,16 @@ userRouter.put("/:email", async (req, res) => {
 
 userRouter.delete("/:id", async (req, res) => {
     try {
+        const { rol: tokenRol } = jwt.decode(req.header("auth-token") as string) as { rol: string };
+
+        if (tokenRol !== "Admin") {
+            return res.status(401).json({ error: "Solo los administradores pueden realizar esta acción" });
+        }
+
         await userRepository.delete(req.params.id);
-        res.status(200).send("Usuario eliminado correctamente");
+        return res.status(200).send("Usuario eliminado correctamente");
     } catch (error) {
-        res.status(500).send("Error al eliminar el usuario");
+        return res.status(500).send("Error al eliminar el usuario");
     }
 });
 
