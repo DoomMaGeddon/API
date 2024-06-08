@@ -6,7 +6,7 @@ const transporter = nodemailer.createTransport({
     port: 587,
     auth: {
         user: 'guideinabyss@gmail.com',
-        pass: 'ihkk ejfe unvy mfad'
+        pass: '' // Aquí va la contraseña especificada en el Manual de despliegue de la memoria del proyecto
     }
 });
 
