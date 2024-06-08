@@ -294,7 +294,13 @@ export async function giveExp(userEmail: string) {
 
         rangos.forEach((rango) => {
             if (user.experiencia > rango.requisito) {
-                user.rangoId = rango.id;
+                if (user.rangoId) {
+                    if (user.rangoId < rango.id) {
+                        user.rangoId = rango.id;
+                    }
+                } else {
+                    user.rangoId = rango.id;
+                }
             }
         })
 
